@@ -53,28 +53,32 @@ pipeline {
                 stage('E2E') {
                     agent {
                         docker {
-                            
-                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-
+                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy' // Use the matching version
+                            args '--user root'
                             reuseNode true
                         }
-                    }
+                    }       
 
                     steps {
                         sh '''
                             npm install serve
-                            node_modules/.bin/serve -s build &
+                            node_modules/.bin/serve -s build -l 5000 &
                             sleep 10
-                            npx playwright test  --reporter=html
+                            npx playwright test --reporter=html --output=playwright-report
                         '''
                     }
 
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Playwright Test Report'
+                            ])
                         }
                     }
-                }
+                }           
+
             }
         }
 
