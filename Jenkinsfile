@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     stages {
+
         stage('Build') {
             agent {
-                docker{
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
@@ -17,14 +18,11 @@ pipeline {
                     npm ci
                     npm run build
                     ls -la
-                    ls -la
                 '''
-                
             }
-
         }
 
-        stage('test'){
+        stage('Tests') {
             parallel {
                 stage('Unit tests') {
                     agent {
@@ -71,13 +69,11 @@ pipeline {
                     }
                 }
             }
-
-
         }
 
         stage('Deploy') {
             agent {
-                docker{
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
@@ -87,18 +83,7 @@ pipeline {
                     npm install netlify-cli
                     node_modules/.bin/netlify --version
                 '''
-                
             }
-
         }
-    
     }
-
-    post {
-        always{
-            junit 'test-results/junit.xml'
-        }
-
-    }
-
 }
